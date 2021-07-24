@@ -19,11 +19,11 @@ function createCanvas(w, h) {
   canvas.id = 'ttt';
   canvas.width = w;
   canvas.height = h;
-  document.body.appendChild(canvas);
+  document.querySelector('#canvasHolder').insertBefore(canvas, document.querySelector('#winner'));
 }
 
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(500, 500);
   currentPlayer = ai;
 
   for (let j = 0; j < board.length; j++) {
@@ -80,6 +80,7 @@ function draw(canvas, board) {
   let h = canvas.height / board.length;
 
   let shapeSize = 1.5;
+  let strokeColor = '#ccc';
 
   ctx.lineWidth = 4;
 
@@ -95,6 +96,7 @@ function draw(canvas, board) {
   ctx.moveTo(0, h * 2)
   ctx.lineTo(w * 3, h * 2);
 
+  ctx.strokeStyle = strokeColor;
   ctx.stroke();
   ctx.closePath();
 
@@ -110,6 +112,7 @@ function draw(canvas, board) {
       ctx.lineTo(w + w * i, h * board.length);
     }
   }
+  ctx.strokeStyle = strokeColor;
   ctx.stroke();
   ctx.closePath();
 
@@ -123,6 +126,7 @@ function draw(canvas, board) {
       if(spot == player) {
         ctx.beginPath();
         ctx.arc(x, y, w / (5 - shapeSize), 0, 2 * Math.PI);
+        ctx.strokeStyle = strokeColor;
         ctx.stroke();
         ctx.closePath();
       } else if (spot == ai) {
@@ -132,6 +136,7 @@ function draw(canvas, board) {
         ctx.lineTo(x + xr, y + xr);
         ctx.moveTo(x + xr, y - xr);
         ctx.lineTo(x - xr, y + xr);
+        ctx.strokeStyle = strokeColor;
         ctx.stroke();
         ctx.closePath();
       }
@@ -140,13 +145,9 @@ function draw(canvas, board) {
 
   let result = checkWinner();
   if (result != null) {
-    let winnerP = document.createElement('p');
+    let winnerP = document.querySelector('p#winner');
     winnerP.id = 'winner';
     winnerP.style.width = `${canvas.width}px`;
-    winnerP.style.fontSize = '64px';
-    winnerP.style.fontFamily = 'sans-serif';
-    winnerP.style.margin = 'unset'
-    winnerP.style.textAlign = 'center';
     
     if(result == 'tie') {
       winnerP.innerText = 'Tie!';
@@ -154,7 +155,7 @@ function draw(canvas, board) {
       winnerP.innerText = `${result} won!`;
     }
 
-    document.body.appendChild(winnerP);
+    document.querySelector('#canvasHolder').appendChild(winnerP);
 
     clearInterval(refreshId);
     return;

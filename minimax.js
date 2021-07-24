@@ -1,7 +1,7 @@
 let scores = {
-  X: 2,
+  X: 1,
   O: -1,
-  tie: -1
+  tie: 0
 }
 
 function randomMove() {
