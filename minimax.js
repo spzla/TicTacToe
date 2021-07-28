@@ -9,12 +9,13 @@ function bestMove(random = false) {
   
   let bestScore = -Infinity;
   let move;
+  isMaximizing = false;
 
   for (let j = 0; j < board.length; j++) {
     for (let i = 0; i < board[0].length; i++) {
       if(board[j][i] == '') {
         board[j][i] = ai;
-        let score = minimax(board, 0, true);
+        let score = minimax(board, 0, isMaximizing);
         board[j][i] = '';
         if(score > bestScore) {
           bestScore = score;
@@ -23,6 +24,7 @@ function bestMove(random = false) {
       }
     }
   }
+  console.log(bestScore);
   
   if(random) {
     move = {
@@ -48,10 +50,10 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
       for (let i = 0; i < board[0].length; i++) {
         if(board[j][i] == '') {
           board[j][i] = ai;
-          let score = minimax(board, depth + 1, alpha, beta, true);
+          let score = minimax(board, depth + 1, alpha, beta, false);
           board[j][i] = '';
           
-          bestScore = Math.max(score, bestScore);
+          bestScore = Math.max(score - depth, bestScore);
 
           alpha = Math.max(alpha, score);
           if(beta <= alpha) break;
@@ -60,15 +62,15 @@ function minimax(board, depth, alpha, beta, isMaximizing) {
     }
     return bestScore;
   } else {
-    let bestScore = Infinity;
+  let bestScore = Infinity;
   for (let j = 0; j < board.length; j++) {
     for (let i = 0; i < board[0].length; i++) {
         if(board[j][i] == '') {
           board[j][i] = player1;
-          let score = minimax(board, depth + 1, alpha, beta, false);
+          let score = minimax(board, depth + 1, alpha, beta, true);
           board[j][i] = '';
           
-          bestScore = Math.min(score, bestScore);
+          bestScore = Math.min(score + depth, bestScore);
 
           beta = Math.min(beta, score);
           if(beta <= alpha) break;
