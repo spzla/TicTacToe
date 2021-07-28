@@ -1,18 +1,24 @@
-let board = [
-  ['', '', ''],
-  ['', '', ''],
-  ['', '', ''],
-];
-
-const player = 'O';
-const ai = 'X';
-let currentPlayer;
-
-let gameInProgress;
+let board = [];
 let available = [];
 
-setup();
+let boardSize = 3;
+
+const player1 = 'O';
+const player2 = 'X';
+const ai = player2;
+let aiEnabled = true;
+let uai = aiEnabled;
+let currentPlayer;
+let refreshId;
+
+let gameInProgress;
+
+createCanvas(500, 500);
 const canvas = document.querySelector('canvas#ttt');
+const checkbox = document.querySelector('input#useAi');
+const resetButton = document.querySelector('input#resetButton');
+const winnerP = document.querySelector('p#winner');
+
 
 function createCanvas(w, h) {
   let canvas = document.createElement('canvas');
@@ -23,17 +29,27 @@ function createCanvas(w, h) {
 }
 
 function setup() {
-  createCanvas(500, 500);
   currentPlayer = ai;
+  aiEnabled = uai;
+  board = [];
+  available = []
 
-  for (let j = 0; j < board.length; j++) {
+  for (let j = 0; j < boardSize; j++) {
+    board.push([]);
     available.push([]);
-    for (let i = 0; i < board[0].length; i++) {
+    for (let i = 0; i < boardSize; i++) {
+      board[j].push('');
       available[j].push(true);
     }
   }
 
-  gameInProgress == true;
+  winnerP.innerHTML = '&nbsp;';
+
+  refreshId = setInterval(() => {
+    draw(canvas, board);
+  }, 10);
+
+  gameInProgress = true;
 }
 
 function equals3(a, b, c) {
@@ -74,7 +90,9 @@ function checkWinner() {
 
 
 function draw(canvas, board) {
+  if(!gameInProgress) return; 
   let ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   let w = canvas.width / board[0].length;
   let h = canvas.height / board.length;
@@ -83,6 +101,24 @@ function draw(canvas, board) {
   let strokeColor = '#ccc';
 
   ctx.lineWidth = 4;
+
+  if(currentPlayer == player1 && !aiEnabled) {
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2 - 2, 0, 2 * Math.PI);
+    ctx.strokeStyle = '#363636';
+    ctx.stroke();
+    ctx.closePath();
+  }
+  if(currentPlayer == player2 && !aiEnabled) {
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.moveTo(canvas.width, 0);
+    ctx.lineTo(0, canvas.height);
+    ctx.strokeStyle = '#363636';
+    ctx.stroke();
+    ctx.closePath();
+  }
 
   ctx.beginPath();
 
@@ -117,13 +153,12 @@ function draw(canvas, board) {
   ctx.closePath();
 
   for (let j = 0; j < board.length; j++) {
-
     for (let i = 0; i < board[0].length; i++) {
       let x = w * j + w / 2;
       let y = h * i + h / 2;
       spot = board[i][j];
 
-      if(spot == player) {
+      if(spot == player1) {
         ctx.beginPath();
         ctx.arc(x, y, w / (5 - shapeSize), 0, 2 * Math.PI);
         ctx.strokeStyle = strokeColor;
@@ -145,8 +180,6 @@ function draw(canvas, board) {
 
   let result = checkWinner();
   if (result != null) {
-    let winnerP = document.querySelector('p#winner');
-    winnerP.id = 'winner';
     winnerP.style.width = `${canvas.width}px`;
     
     if(result == 'tie') {
@@ -154,13 +187,13 @@ function draw(canvas, board) {
     } else {
       winnerP.innerText = `${result} won!`;
     }
-
-    document.querySelector('#canvasHolder').appendChild(winnerP);
-
-    clearInterval(refreshId);
+    
+    gameInProgress = false;
     return;
   }
   
+  if(!aiEnabled) { return; }
+  if(currentPlayer == ai && available.every((el) => el.every((e) => e == true))) randomMove();
   if(currentPlayer == ai) bestMove();
 }
 
@@ -171,11 +204,14 @@ function getCursorPosition(canvas, event) {
   return { x, y };
 }
 
+checkbox.addEventListener('change', (e) => {
+  uai = document.querySelector('input#useAi').checked;
+});
 
-draw(canvas, board)
-const refreshId = setInterval(() => {
+resetButton.addEventListener('click', () => {
+  setup();
   draw(canvas, board);
-}, 10);
+});
 
 canvas.addEventListener('mousedown', (e) => {
   let { x, y } = getCursorPosition(canvas, e);
@@ -186,11 +222,15 @@ canvas.addEventListener('mousedown', (e) => {
   x = Math.floor(x / w);
   y = Math.floor(y / h);
 
-  if(currentPlayer != player || !board[y][x] == '') return;
+  if(!gameInProgress) return;
+  if((currentPlayer != player1 && aiEnabled) || !board[y][x] == '') return;
 
   available[y].splice(x, 1, false);
   board[y][x] = currentPlayer;
-  currentPlayer = ai;
+  if(currentPlayer == player1) currentPlayer = player2;
+  else currentPlayer = player1;
 
-  bestMove();
+  if(aiEnabled) bestMove();
 });
+
+setup();
