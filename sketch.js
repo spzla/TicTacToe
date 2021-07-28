@@ -1,7 +1,7 @@
 let board = [];
 let available = [];
 
-let boardSize = 3;
+let boardSize = 3; // if greater than 3 it will crash
 
 const player1 = 'O';
 const player2 = 'X';
@@ -193,7 +193,7 @@ function draw(canvas, board) {
   }
   
   if(!aiEnabled) { return; }
-  if(currentPlayer == ai && available.every((el) => el.every((e) => e == true))) randomMove();
+  if(currentPlayer == ai && available.every((el) => el.every((e) => e == true))) bestMove(true);
   if(currentPlayer == ai) bestMove();
 }
 
